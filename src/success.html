@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Success</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <style>
+      div.form {
+        margin:10px;
+      }
+    </style>
+
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+    <!-- normal script imports etc  -->
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>  
+    <script>if (window.module) module = window.module;</script>
+
+    <script type='text/javascript'>
+
+      $(document).ready(function() {
+
+        $("#btnClose").click( function() {
+          bridgeAPI.close()
+          
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <br/>
+    <div class="container" style="text-align: center;">
+        <div class="row">
+            <div class="col-md-20">
+                <div class="success-template">
+                    <h1>Success</h1>
+                    <div class="alert alert-success alert-dismissible d-flex align-items-center fade show">
+                      <i class="bi-check-circle-fill"></i>
+                      <strong class="mx-2">Success!</strong> Your creds has been set successfully.
+                  </div>
+                    <br/>
+                    <div class="success-actions">
+                        <button type="button" id="btnClose" class="btn btn-primary">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>

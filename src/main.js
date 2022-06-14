@@ -69,9 +69,16 @@ const menuTemplate = [
   }
 ];
 
+
 process.on('uncaughtException', function (error) {
   showError({message: error});
 });
+
+ipcMain.on('close', (event, arg) => {
+  event.returnValue = "ack"
+  process.exit(0);
+})
+
 
 ipcMain.on("azure-login", (event, profile) => {
 
@@ -204,10 +211,11 @@ ipcMain.on("role-choice", (event, role) => {
       }
 
       showStats();
-      mainWindow.hide();
+      // mainWindow.hide();
       console.log("Success");
       event.returnValue = "Success"
-      process.exit(0);
+      
+      mainWindow.loadURL('file://' + __dirname + '/success.html');
     })
     .catch(e => {
       showError(e);

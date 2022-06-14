@@ -47,7 +47,10 @@ contextBridge.exposeInMainWorld('bridgeAPI', {
     console.log('preload:bridgeAPI:roleChoice')
     return ipcRenderer.sendSync('get-errors', {})
   },
-  
+  close: () => {
+    console.log('preload:bridgeAPI:close')
+    return ipcRenderer.sendSync('close', {})
+  },
 
   
   
