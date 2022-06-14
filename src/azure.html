@@ -22,22 +22,28 @@
 
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
+    <!-- normal script imports etc  -->
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>   
+    
     <script>
-      window.ipcRenderer = require('electron').ipcRenderer;
-      window.$ = window.jQuery = require('jquery');
   
       onload = () => {
         const webview = document.querySelector("webview");
+
         webview.addEventListener("ipc-message", function listener(event) {
           if (event.channel == "saml_token_found") {
-            window.ipcRenderer.sendSync('send-debug', 'Sending SAML token to main process')
-            const ipc = require('electron').ipcRenderer;
+            // window.ipcRenderer.sendSync('send-debug', 'Sending SAML token to main process')
+            bridgeAPI.sendDebug('Sending SAML token to main process');
+            // const ipc = require('electron').ipcRenderer;
             console.log("samlTokenFound->");
-            ipc.send('saml_token_found', event.args[0]);
+            // ipc.send('saml_token_found', event.args[0]);
+            bridgeAPI.samlTokenFound(event.args[0])
             // Azure page sometimes fires the onload twice, only listen to the first one
             webview.removeEventListener("ipc-message", listener);
             // Hide the webview because we're transitioning to our role picker instead of AWS' native one
             webview.className = "hidden";
+          }else if (event.channel == "debug"){
+            bridgeAPI.sendDebug( event.args[0]);
           }
         });
 
@@ -53,7 +59,9 @@
 
         webview.addEventListener('did-start-loading', loadstart)
         webview.addEventListener('did-stop-loading', loadstop)
-
+        webview.addEventListener('console-message', (e) => {
+          console.log('Guest page logged a message:', e.message)
+        })
       }
     </script>
     <script>if (window.module) module = window.module;</script>

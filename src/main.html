@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Status</title>
+    <title>Profiles</title>
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="../node_modules/datatables.net-dt/css/jquery.dataTables.css">
     <style>
@@ -14,22 +14,27 @@
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
     <script>
-      window.$ = window.jQuery = require('jquery');
-      var dt = require("datatables.net")();
+      // window.$ = window.jQuery = require('jquery');
+      // var dt = require("datatables.net")();
       // Couldn't quite load style dynamically for some reason...
       //var dtdt = require("datatables.net-bs4")();
-      var ctdn = require("jquery-countdown");
+      // var ctdn = require("jquery-countdown");
     </script>
-    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script>if (window.module) module = window.module;</script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <!-- normal script imports etc  -->
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>    
+    <link rel="stylesheet" type="text/css" href="../node_modules/datatables.net-dt/css/jquery.dataTables.min.css"/>
+    <script type="text/javascript" src="../node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
 
     <script type='text/javascript'>
       // Connect ipcRenderer to the page, so that we can send events back to the main process
-      window.ipcRenderer = require('electron').ipcRenderer;
-
+      // window.ipcRenderer = require('electron').ipcRenderer;
+      
       $(document).ready(function() {
         var _Profiles
-        console.log(_Profiles = window.ipcRenderer.sendSync('list-profiles', 'ping')) // get list of profiles
+        console.log(_Profiles = bridgeAPI.listProfiles()) // get list of profiles
 
           var ProfileTable = $("#profiles").on("draw.dt", function() { countDown() })
           .DataTable( {
@@ -70,11 +75,14 @@
 
       function profileSelected(profile) {
         console.log("profileSelected->");
-        ipcRenderer.send('azure-login', profile);
+        // ipcRenderer.send('azure-login', profile);
+        bridgeAPI.profileSelected(profile)
       }
       function editProfile(profile) {
         console.log("editProfile->");
-        ipcRenderer.send('edit-profile', profile);
+        // ipcRenderer.send('edit-profile', profile);
+        bridgeAPI.editProfile(profile)
+
       }
 
       function countDown() {

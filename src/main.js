@@ -76,29 +76,39 @@ process.on('uncaughtException', function (error) {
 ipcMain.on("azure-login", (event, profile) => {
 
   login(profile);
+  event.returnValue = "ack"
+
 });
 
 ipcMain.on("edit-profile", (event, profile) => {
   editProfile (profile);
+  event.returnValue = "ack"
+
 });
 
 // Event handler to create a new profile
 ipcMain.on("settings-nav", (event, settings) => {
   newProfile();
+  event.returnValue = "ack"
+
 });
 
 ipcMain.on("show-stats", (event) => {
   showStats();
+  event.returnValue = "ack"
 });
 
 // Event handler for profile form submission
 ipcMain.on("save-profile", (event, data) => {
   saveProfile(data);
 
-  if (data.log_in)
+  if (data.log_in){
     login(data.profile);
-  else
+  }
+  else{
     showStats();
+  }
+  event.returnValue = "ack"
 });
 
 ipcMain.on('list-profiles', (event, arg) => {
@@ -147,6 +157,7 @@ ipcMain.on('saml_token_found', (event, data) => {
   _RolesMap = rolesMap
   mainWindow.defaultRole = _DefaultRole;
   mainWindow.loadURL('file://' + __dirname + '/roleChoice.html');
+  event.returnValue = "ack"
 });
 
 // Event handler for role-choice after successful login
@@ -195,11 +206,15 @@ ipcMain.on("role-choice", (event, role) => {
       showStats();
       mainWindow.hide();
       console.log("Success");
+      event.returnValue = "Success"
       process.exit(0);
     })
     .catch(e => {
       showError(e);
+      event.returnValue = "Error"
     });
+
+    
 });
 
 // This method will be called when Electron has finished
@@ -278,6 +293,7 @@ function listProfiles() {
 function showStats() {
 
   mainWindow.loadURL('file://' + __dirname + '/main.html');
+
 }
 
 function IsSessionExpiring() {
@@ -356,7 +372,8 @@ function login(profile) {
   
   mainWindow.webContents.executeJavaScript(`
   console.log("This loads no problem!");
-  document.querySelector( '#login' ).setAttribute( 'src','${url}')
+  document.querySelector( '#login' ).setAttribute( 'src','${url}');
+  
 `)
   // mainWindow.webContents.executeJavaScript("$('#login')[0].src = '" + url + "'");
 }
@@ -376,14 +393,15 @@ function createWindow(opts) {
     let iconpath = path.join(__dirname, icon);
     let trayIconpath = path.join(__dirname, trayIcon);
 
-    mainWindow = new BrowserWindow({ width: 750, height: 650, icon: iconpath,         
+    mainWindow = new BrowserWindow({
+      width: 750, 
+      height: 650, 
+      icon: iconpath,
       webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        nodeIntegrationInSubFrames: true,
         webviewTag: true,
-        // preload: path.join(__dirname, 'preload.js')
-  } });
+        preload: path.join(__dirname, 'preload.js')
+      }
+  });
     // Since this tool is only use to set/refresh credentials, when we open it or it
     // pops back up on expirations, we want to make sure it gets attention
     mainWindow.setAlwaysOnTop(true);

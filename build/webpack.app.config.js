@@ -3,7 +3,7 @@ var path = require('path');
 
 module.exports = {
   entry: {
-    app: './src/main.js'
+    app: './src/main.js',
   },
   mode: "production",
   output: {
@@ -12,7 +12,7 @@ module.exports = {
   },
   target: 'node',
   externals: [nodeExternals({
-    whitelist: [
+    allowlist: [
       'jquery',
       'bootstrap/dist',
       'datatables.net-dt/css'

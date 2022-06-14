@@ -12,18 +12,15 @@
 
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
-    <script type='text/javascript'>
-      window.$ = window.jQuery = require('jquery');
-    </script>
+    <!-- normal script imports etc  -->
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>  
     <script>if (window.module) module = window.module;</script>
 
     <script type='text/javascript'>
-      // Connect ipcRenderer to the page, so that we can send events back to the main process
-      window.ipcRenderer = require('electron').ipcRenderer;
 
       $(document).ready(function() {
         let msg;
-        currentWindow = window.ipcRenderer.sendSync('get-errors', 'ping') // get profile to edit
+        currentWindow =  bridgeAPI.getErrors() // get profile to edit
 
 
         if (!currentWindow._Error)
@@ -38,7 +35,8 @@
         $("#error").text(msg);
 
         $("#btnHome").click( function() {
-          ipcRenderer.send("show-stats");
+          bridgeAPI.showStats()
+          
         });
       });
     </script>
