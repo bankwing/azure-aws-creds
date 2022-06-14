@@ -12,20 +12,19 @@
 
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
-    <script type='text/javascript'>
-      window.$ = window.jQuery = require('jquery');
-    </script>
+    <!-- normal script imports etc  -->
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>    
     <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
     <script>if (window.module) module = window.module;</script>
 
     <script type='text/javascript'>
       // Connect ipcRenderer to the page, so that we can send events back to the main process
-      window.ipcRenderer = require('electron').ipcRenderer;
+      // window.ipcRenderer = require('electron').ipcRenderer;
 
       $(document).ready(function() {
         var _EditProfile
-        console.log(_EditProfile = window.ipcRenderer.sendSync('get-profile', 'ping')) // get profile to edit
+        console.log(_EditProfile = bridgeAPI.getProfile()) // get profile to edit
 
 
         if (_EditProfile) {
@@ -48,7 +47,8 @@
               alert("Profile, Azure Tenant ID and App URI are required");
               return;
           }
-          ipcRenderer.send("save-profile", objectifyForm($("#settingsForm").serializeArray()));
+          bridgeAPI.saveProfile(objectifyForm($("#settingsForm").serializeArray()))
+          // ipcRenderer.send("save-profile", objectifyForm($("#settingsForm").serializeArray()));
         });
 
         $("#save_log_in").click(function( event ) {
@@ -56,7 +56,9 @@
         });
 
         $("#cxl").click(function( event ) {
-          ipcRenderer.send("show-stats");
+          // ipcRenderer.send("show-stats");
+          bridgeAPI.showStats()
+
         });
 
         function objectifyForm(formArray) { //serialize data function
