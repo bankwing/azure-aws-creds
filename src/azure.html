@@ -23,13 +23,14 @@
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
     <script>
+      window.ipcRenderer = require('electron').ipcRenderer;
       window.$ = window.jQuery = require('jquery');
-      const debug = require('electron').remote.getGlobal('main_debug');
+  
       onload = () => {
         const webview = document.querySelector("webview");
         webview.addEventListener("ipc-message", function listener(event) {
           if (event.channel == "saml_token_found") {
-            debug("Sending SAML token to main process");
+            window.ipcRenderer.sendSync('send-debug', 'Sending SAML token to main process')
             const ipc = require('electron').ipcRenderer;
             console.log("samlTokenFound->");
             ipc.send('saml_token_found', event.args[0]);
@@ -39,11 +40,26 @@
             webview.className = "hidden";
           }
         });
+
+        const indicator = document.querySelector('.indicator')
+
+        const loadstart = () => {
+               indicator.innerText = 'Loading...'
+        }
+
+        const loadstop = () => {
+           indicator.innerText = ''
+        }
+
+        webview.addEventListener('did-start-loading', loadstart)
+        webview.addEventListener('did-stop-loading', loadstop)
+
       }
     </script>
     <script>if (window.module) module = window.module;</script>
   </head>
   <body>
-    <webview id="login" preload="./azure_preload.js"></webview>
+    <div class = "indicator"></div>
+    <webview id="login" preload="./azure_preload.js" ></webview>
   </body>
 </html>

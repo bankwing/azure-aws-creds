@@ -24,18 +24,19 @@
       window.ipcRenderer = require('electron').ipcRenderer;
 
       $(document).ready(function() {
-        var electron = require('electron');
-        var currentWindow = electron.remote.getCurrentWindow();
+        var _EditProfile
+        console.log(_EditProfile = window.ipcRenderer.sendSync('get-profile', 'ping')) // get profile to edit
 
-        if (currentWindow._EditProfile) {
-          $("#profile").val(currentWindow._EditProfile.profile);
+
+        if (_EditProfile) {
+          $("#profile").val(_EditProfile.profile);
           // Disallow changing the profile name for existing entries
           $("#profile").prop('readonly', true);
-          $("#region").val(currentWindow._EditProfile.region);
-          $("#azure_tenant_id").val(currentWindow._EditProfile.azure_tenant_id);
-          $("#azure_app_id_uri").val(currentWindow._EditProfile.azure_app_id_uri);
-          $("#azure_default_role_arn").val(currentWindow._EditProfile.azure_default_role_arn);
-          $("#azure_session_duration_minutes").val(currentWindow._EditProfile.azure_session_duration_minutes);
+          $("#region").val(_EditProfile.region);
+          $("#azure_tenant_id").val(_EditProfile.azure_tenant_id);
+          $("#azure_app_id_uri").val(_EditProfile.azure_app_id_uri);
+          $("#azure_default_role_arn").val(_EditProfile.azure_default_role_arn);
+          $("#azure_session_duration_minutes").val(_EditProfile.azure_session_duration_minutes);
         }
 
         $("#settingsForm").submit(function( event ) {

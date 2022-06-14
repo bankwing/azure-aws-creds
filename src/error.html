@@ -23,8 +23,8 @@
 
       $(document).ready(function() {
         let msg;
-        var electron = require('electron');
-        var currentWindow = electron.remote.getCurrentWindow();
+        currentWindow = window.ipcRenderer.sendSync('get-errors', 'ping') // get profile to edit
+
 
         if (!currentWindow._Error)
           msg = "Unknown error: No additional error information was included."

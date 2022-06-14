@@ -17,14 +17,16 @@
       window.ipcRenderer = require('electron').ipcRenderer;
 
       $(document).ready(function() {
-        var electron = require('electron');
-        var currentWindow = electron.remote.getCurrentWindow();
+        // var electron = require('electron');
+        // var currentWindow = electron.remote.getCurrentWindow();
+        console.log(_Roles = window.ipcRenderer.sendSync('get-roles', 'ping')) // get profile to edit
 
-        $('#profile').prop("value", currentWindow.currentProfile);
+
+        $('#profile').prop("value", _Roles.currentProfile);
 
         var $select = $('#role-select');
         $('<option />').html("-- Choose Role --").appendTo($select);
-        $.each(currentWindow.rolesMap, function(key, value) {
+        $.each(_Roles.rolesMap, function(key, value) {
           var group = $('<optgroup label="' + key + '" />');
           $.each(value, function() {
             // TODO: The account # prefix on display should probably be an optional approach,
@@ -32,7 +34,7 @@
             var display = key + "->" + this.roleName
             var opt = $('<option />').html(display).val(this.roleArn);
             opt.data(this);
-            if (currentWindow.defaultRole == this.roleArn)
+            if (_Roles.defaultRole == this.roleArn)
               opt.attr("selected", "selected");
             opt.appendTo(group);
           });

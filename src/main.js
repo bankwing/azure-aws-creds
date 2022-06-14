@@ -4,6 +4,7 @@ const electron = require('electron');
 const debug = require('debug')('azure-aws-creds');
 // Export debug object for common use in renderers
 global.main_debug = debug;
+
 if (debug.enabled) {
   require('electron-debug')({ showDevTools: "undocked" });
 }
@@ -37,7 +38,8 @@ var _SessionTimer, _SessionTimerActive;
 var _RoleSessions = {};
 var _CurrentProfile;
 var _DefaultRole = "";
-
+var _EditProfile = null
+var _RolesMap = null
 
 const menuTemplate = [
   {
@@ -72,6 +74,7 @@ process.on('uncaughtException', function (error) {
 });
 
 ipcMain.on("azure-login", (event, profile) => {
+
   login(profile);
 });
 
@@ -98,10 +101,42 @@ ipcMain.on("save-profile", (event, data) => {
     showStats();
 });
 
-ipcMain.on('saml_token_found', (event, data) => {
-  //debug("ipcMain SAML: " + data);
-  const rolesMap = parseSAMLToken(data);
+ipcMain.on('list-profiles', (event, arg) => {
+  debug('list-profiles') // prints "ping"
+  event.returnValue = listProfiles()
+})
 
+ipcMain.on('send-debug', (event, arg) => {
+
+  debug('received-debug: '+ arg) // prints "ping"
+  event.returnValue = "ack"
+})
+
+ipcMain.on('get-profile', (event, arg) => {
+  debug(arg) // prints "ping"
+  if(_EditProfile != null)
+    event.returnValue = getProfile(_EditProfile)
+  else
+    event.returnValue = null
+})
+
+ipcMain.on('get-roles', (event, arg) => {
+  debug('get-roles') // prints "ping"
+
+  event.returnValue = { rolesMap: _RolesMap, defaultRole: _DefaultRole, currentProfile: _CurrentProfile }
+})
+
+ipcMain.on('get-errors', (event, arg) => {
+  debug('get-errors') // prints "ping"
+
+  event.returnValue = { _Error: mainWindow._Error }
+})
+
+ipcMain.on('saml_token_found', (event, data) => {
+
+  debug('Received: saml_token_found')
+  const rolesMap = parseSAMLToken(data);
+  
   if (rolesMap.length === 0) {
     showError({ message: "SAML Response is missing 'https://aws.amazon.com/SAML/Attributes/Role' value(s)" });
     return;
@@ -109,6 +144,7 @@ ipcMain.on('saml_token_found', (event, data) => {
 
   mainWindow.currentProfile = _CurrentProfile;
   mainWindow.rolesMap = rolesMap;
+  _RolesMap = rolesMap
   mainWindow.defaultRole = _DefaultRole;
   mainWindow.loadURL('file://' + __dirname + '/roleChoice.html');
 });
@@ -158,6 +194,8 @@ ipcMain.on("role-choice", (event, role) => {
 
       showStats();
       mainWindow.hide();
+      console.log("Success");
+      process.exit(0);
     })
     .catch(e => {
       showError(e);
@@ -190,20 +228,28 @@ app.on('activate', function () {
 
 function newProfile() {
   mainWindow._EditProfile = null;
+  _EditProfile = null
   mainWindow.loadURL('file://' + __dirname + '/settings.html');
+}
+
+
+function getProfile(profile) {
+  return getAwsProfile(profile);
 }
 
 function editProfile(profile) {
   mainWindow._EditProfile = getAwsProfile(profile);
+  _EditProfile = profile
   mainWindow.loadURL('file://' + __dirname + '/settings.html');
 }
 
 function showError(error) {
+  debug(error)
   mainWindow._Error = error;
   mainWindow.loadURL('file://' + __dirname + '/error.html');
 }
 
-function showStats() {
+function listProfiles() {
   // Show all profiles, and show countdowns for any with active sessions
   let profiles = [];
   let awsConfigs = getAwsConfigs();
@@ -226,7 +272,10 @@ function showStats() {
     profiles.push(c);
   });
 
-  mainWindow._Profiles = profiles;
+  return profiles;
+}
+
+function showStats() {
 
   mainWindow.loadURL('file://' + __dirname + '/main.html');
 }
@@ -269,7 +318,10 @@ function sessionSecondsRemaining(sessionExp) {
 }
 
 function login(profile) {
+  debug(profile)
   let awsProfile = getAwsProfile(profile);
+
+  debug(awsProfile)
 
   // If App or Tenant ID is wrong, there's an AzureAD error message. It would be nice to trap that event,
   // but could be tricky relying on Azure's error message/page. Clicking 'Profiles' or other menu items
@@ -301,7 +353,12 @@ function login(profile) {
   debug("loading Azure page");
   // azure.html will load the AzureAD site in a webview to isolate it from our Node-integrated windows (per Electron 1.8.x warning/best practices)
   mainWindow.loadURL('file://' + __dirname + '/azure.html');
-  mainWindow.webContents.executeJavaScript("$('#login')[0].src = '" + url + "'");
+  
+  mainWindow.webContents.executeJavaScript(`
+  console.log("This loads no problem!");
+  document.querySelector( '#login' ).setAttribute( 'src','${url}')
+`)
+  // mainWindow.webContents.executeJavaScript("$('#login')[0].src = '" + url + "'");
 }
 
 function createWindow(opts) {
@@ -319,7 +376,14 @@ function createWindow(opts) {
     let iconpath = path.join(__dirname, icon);
     let trayIconpath = path.join(__dirname, trayIcon);
 
-    mainWindow = new BrowserWindow({ width: 750, height: 650, icon: iconpath });
+    mainWindow = new BrowserWindow({ width: 750, height: 650, icon: iconpath,         
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        nodeIntegrationInSubFrames: true,
+        webviewTag: true,
+        // preload: path.join(__dirname, 'preload.js')
+  } });
     // Since this tool is only use to set/refresh credentials, when we open it or it
     // pops back up on expirations, we want to make sure it gets attention
     mainWindow.setAlwaysOnTop(true);

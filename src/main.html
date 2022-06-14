@@ -28,12 +28,12 @@
       window.ipcRenderer = require('electron').ipcRenderer;
 
       $(document).ready(function() {
-        var electron = require('electron');
-        var currentWindow = electron.remote.getCurrentWindow();
+        var _Profiles
+        console.log(_Profiles = window.ipcRenderer.sendSync('list-profiles', 'ping')) // get list of profiles
 
-        $("#profiles").on("draw.dt", function() { countDown() })
+          var ProfileTable = $("#profiles").on("draw.dt", function() { countDown() })
           .DataTable( {
-          data: currentWindow._Profiles,
+          data: _Profiles,
           columns: [
             {
               title: "Profile",
@@ -64,6 +64,8 @@
             }
           ]
         });
+
+        
       });
 
       function profileSelected(profile) {
