@@ -40,6 +40,13 @@
           });
           group.appendTo($select);
         });
+
+        $("#cxl").click(function( event ) {
+          // ipcRenderer.send("show-stats");
+          bridgeAPI.showStats()
+
+        });
+
       });
 
       function roleSelected() {
@@ -82,7 +89,7 @@
           <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
           <text id="txtBtn">Assume Role</text>
         </button>
-
+        <button type="button" class="btn btn-secondary" id="cxl">Cancel</button>
        
       </form>
     </div>

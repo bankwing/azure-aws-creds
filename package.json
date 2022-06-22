@@ -1,6 +1,6 @@
 {
   "name": "azure-aws-creds",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Electron app to update AWS credentials via Azure AD federation",
   "main": "src/main.js",
   "bin": "./src/main.js",
@@ -52,11 +52,11 @@
     "CLI",
     "credentials"
   ],
-  "author": "Mark Olson",
+  "author": "Neti Muang-in",
   "license": "MIT",
-  "homepage": "https://github.com/mr-olson/azure-aws-creds",
+  "homepage": "https://github.com/bankwing/azure-aws-creds",
   "bugs": {
-    "url": "https://github.com/mr-olson/azure-aws-creds/issues"
+    "url": "https://github.com/bankwing/azure-aws-creds/issues"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",

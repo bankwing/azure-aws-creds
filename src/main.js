@@ -3,11 +3,6 @@
 const electron = require('electron');
 const { protocol, session } = require('electron')
 
-// Modify the user agent for all requests to the following urls.
-const filter = {
-  urls: ['https://*']
-}
-
 const debug = require('debug')('azure-aws-creds');
 // Export debug object for common use in renderers
 global.main_debug = debug;
@@ -451,6 +446,9 @@ function createWindow(opts) {
     const menu = Menu.buildFromTemplate(menuTemplate);
     mainWindow.setMenu(menu);
 
+    if (process.platform == "darwin")
+      Menu.setApplicationMenu(menu)
+
     let appIcon = new Tray(trayIconpath);
     let contextMenu = Menu.buildFromTemplate([
       {
@@ -467,8 +465,9 @@ function createWindow(opts) {
     appIcon.setContextMenu(contextMenu);
 
     mainWindow.on('show', function () {
-      appIcon.setHighlightMode('always')
+      // appIcon.setHighlightMode('always')
     });
+
     appIcon.on('click', () => {
       mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
     })
