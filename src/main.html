@@ -31,6 +31,7 @@
     <script type='text/javascript'>
       // Connect ipcRenderer to the page, so that we can send events back to the main process
       // window.ipcRenderer = require('electron').ipcRenderer;
+      var processing = false;
       
       $(document).ready(function() {
         var _Profiles
@@ -76,8 +77,13 @@
       function profileSelected(profile) {
         console.log("profileSelected->");
         // ipcRenderer.send('azure-login', profile);
-        bridgeAPI.profileSelected(profile)
+        if(!processing){
+          processing = true;
+          $("#spinner").removeClass("d-none");
+          bridgeAPI.profileSelected(profile)
+        }    
       }
+
       function editProfile(profile) {
         console.log("editProfile->");
         // ipcRenderer.send('edit-profile', profile);
@@ -106,5 +112,11 @@
   </head>
   <body style="padding: 1em;">
     <table id="profiles" class="display compact" width="100%"></table>
+    <div id="spinner" class="d-flex justify-content-center d-none">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
   </body>
 </html>

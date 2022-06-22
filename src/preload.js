@@ -41,7 +41,8 @@ contextBridge.exposeInMainWorld('bridgeAPI', {
   },
   roleChoice: (data) => {
     console.log('preload:bridgeAPI:roleChoice')
-    return ipcRenderer.sendSync('role-choice', data)
+    ipcRenderer.send('role-choice', data); // send request
+    
   },
   getErrors: () => {
     console.log('preload:bridgeAPI:roleChoice')

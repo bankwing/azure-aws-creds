@@ -1,6 +1,13 @@
 "use strict";
 
 const electron = require('electron');
+const { protocol, session } = require('electron')
+
+// Modify the user agent for all requests to the following urls.
+const filter = {
+  urls: ['https://*']
+}
+
 const debug = require('debug')('azure-aws-creds');
 // Export debug object for common use in renderers
 global.main_debug = debug;
@@ -151,7 +158,6 @@ ipcMain.on('get-errors', (event, arg) => {
 
 ipcMain.on('saml_token_found', (event, data) => {
 
-  debug('Received: saml_token_found')
   const rolesMap = parseSAMLToken(data);
   
   if (rolesMap.length === 0) {
@@ -376,14 +382,43 @@ function login(profile) {
   _CurrentProfile = profile;
   debug("loading Azure page");
   // azure.html will load the AzureAD site in a webview to isolate it from our Node-integrated windows (per Electron 1.8.x warning/best practices)
-  mainWindow.loadURL('file://' + __dirname + '/azure.html');
+  // mainWindow.loadURL('file://' + __dirname + '/azure.html');
   
-  mainWindow.webContents.executeJavaScript(`
-  console.log("This loads no problem!");
-  document.querySelector( '#login' ).setAttribute( 'src','${url}');
+  // mainWindow.webContents.on('will-navigate', (event, url) => {
+  //   console.log(url)
+  // })
+
+  // protocol.interceptBufferProtocol("https", (request, result) => {
+  //   console.log(request)
+  //   if (request.url === "http://www.google.com")
+  //     return result(content);
+  //   else return
+  // });
+
+
+  mainWindow.loadURL(url);
   
-`)
-  // mainWindow.webContents.executeJavaScript("$('#login')[0].src = '" + url + "'");
+  session.defaultSession.webRequest.onBeforeSendHeaders({urls: ["<all_urls>"]}, (details, callback) => {
+
+    if (details.uploadData && details.url == "https://signin.aws.amazon.com/saml") {
+        const buffer = Array.from(details.uploadData)[0].bytes;
+        // console.log('Request body: ', buffer.toString());
+        let samlRegx = new RegExp(/SAMLResponse=/, "i");
+        if (samlRegx.test(buffer.toString())) {
+          debug('SAML token found')
+          let token = buffer.toString().split("=");
+          debug("SAML token contents: " + decodeURIComponent(token[1]))
+
+          ipcMain.emit('saml_token_found', {}, decodeURIComponent(token[1]) );
+        }
+        callback({ cancel: true })
+
+    }else{
+      callback(details);
+    }
+    
+  })
+
 }
 
 function createWindow(opts) {
@@ -455,6 +490,8 @@ function createWindow(opts) {
 function parseSAMLToken (samlResponse) {
   const samlText = new Buffer.from(samlResponse, 'base64').toString("ascii");
   const saml = JSDOM.fragment(samlText);
+  
+  debug(saml)
 
   let roles = Array();
   Array.from(saml.querySelectorAll("Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue")).forEach((rp) => {
