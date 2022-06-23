@@ -32,6 +32,10 @@ const { JSDOM } = jsdom;
 
 const sts = new AWS.STS();
 
+const endpoint = process.env.AWS_STS_REGIONAL_ENDPOINTS || "sts.ap-southeast-1.amazonaws.com"
+// Set defualt Endpoint to Asia Pacific (Singapore)
+sts.setEndpoint(endpoint)
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 var mainWindow;
@@ -375,22 +379,8 @@ function login(profile) {
 
   // Current profile being logged in to
   _CurrentProfile = profile;
-  debug("loading Azure page");
-  // azure.html will load the AzureAD site in a webview to isolate it from our Node-integrated windows (per Electron 1.8.x warning/best practices)
-  // mainWindow.loadURL('file://' + __dirname + '/azure.html');
+  debug("loading Azure page: " + url);
   
-  // mainWindow.webContents.on('will-navigate', (event, url) => {
-  //   console.log(url)
-  // })
-
-  // protocol.interceptBufferProtocol("https", (request, result) => {
-  //   console.log(request)
-  //   if (request.url === "http://www.google.com")
-  //     return result(content);
-  //   else return
-  // });
-
-
   mainWindow.loadURL(url);
   
   session.defaultSession.webRequest.onBeforeSendHeaders({urls: ["<all_urls>"]}, (details, callback) => {
