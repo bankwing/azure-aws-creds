@@ -36,6 +36,7 @@
           $("#azure_app_id_uri").val(_EditProfile.azure_app_id_uri);
           $("#azure_default_role_arn").val(_EditProfile.azure_default_role_arn);
           $("#azure_session_duration_minutes").val(_EditProfile.azure_session_duration_minutes);
+          $("#sts_endpoint").val(_EditProfile.sts_endpoint);
         }
 
         $("#settingsForm").submit(function( event ) {
@@ -114,6 +115,13 @@
           <div class="col-sm-8">
             <input type="text" class="form-control" id="azure_session_duration_minutes" name="azure_session_duration_minutes" aria-describedby="azure_session_duration_minutesHelp" placeholder="Minutes to stay logged in to role">
             <small id="azure_session_duration_minutesHelp" class="form-text text-muted">[optional, # of minutes, defaults to 60]</small>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="sts_endpoint" class="col-sm-4 col-form-label">STS Endpoint</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" id="sts_endpoint" name="sts_endpoint" aria-describedby="sts_endpointHelp" placeholder="STS Endpoint">
+            <small id="sts_endpointHelp" class="form-text text-muted">[optional, e.g. sts.ap-southeast-1.amazonaws.com]</small>
           </div>
         </div>
         <input type="checkbox" style="display: none;" name="log_in" value="y" id="log_in" />

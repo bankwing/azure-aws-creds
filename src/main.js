@@ -32,10 +32,6 @@ const { JSDOM } = jsdom;
 
 const sts = new AWS.STS();
 
-const endpoint = process.env.AWS_STS_REGIONAL_ENDPOINTS || "sts.ap-southeast-1.amazonaws.com"
-// Set defualt Endpoint to Asia Pacific (Singapore)
-sts.setEndpoint(endpoint)
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 var mainWindow;
@@ -176,6 +172,14 @@ ipcMain.on('saml_token_found', (event, data) => {
 ipcMain.on("role-choice", (event, role) => {
   let p = getAwsProfile(_CurrentProfile);
   let sessionSeconds = p.azure_session_duration_minutes * 60;
+  let stsEndpoint = p.sts_endpoint || process.env.AWS_STS_REGIONAL_ENDPOINTS || "sts.ap-southeast-1.amazonaws.com"
+  
+  // Set defualt Endpoint to Asia Pacific (Singapore)
+  sts.setEndpoint(stsEndpoint) ;
+  
+  // check endpoint:  
+  isConnected(stsEndpoint).then(console.log);
+   
   let params = {
     DurationSeconds: sessionSeconds,
     PrincipalArn: role.principalArn,
@@ -562,11 +566,13 @@ function getAwsProfile(profile) {
     azure_app_id_uri: awsConfig[profileKey].azure_app_id_uri,
     azure_tenant_id: awsConfig[profileKey].azure_tenant_id,
     azure_default_role_arn: awsConfig[profileKey].azure_default_role_arn,
-    azure_session_duration_minutes: session
+    azure_session_duration_minutes: session,
+    sts_endpoint: awsConfig[profileKey].sts_endpoint
   }
 }
 
 function saveProfile(data) {
+  
   let configDirectory = awsDir();
   let configPath = path.join(configDirectory, "config");
   let profileKey = data.profile == "default" ? data.profile : "profile " + data.profile;
@@ -578,10 +584,38 @@ function saveProfile(data) {
 
   if (data.region)
     awsConfig[profileKey].region = data.region;
-  awsConfig[profileKey].azure_tenant_id = data.azure_tenant_id;
-  awsConfig[profileKey].azure_app_id_uri = data.azure_app_id_uri;
-  awsConfig[profileKey].azure_default_role_arn = data.azure_default_role_arn;
-  awsConfig[profileKey].azure_session_duration_minutes = data.azure_session_duration_minutes;
+    awsConfig[profileKey].azure_tenant_id = data.azure_tenant_id;
+    awsConfig[profileKey].azure_app_id_uri = data.azure_app_id_uri;
+    awsConfig[profileKey].azure_default_role_arn = data.azure_default_role_arn;
+    awsConfig[profileKey].azure_session_duration_minutes = data.azure_session_duration_minutes;
+    awsConfig[profileKey].sts_endpoint = data.sts_endpoint || "sts.ap-southeast-1.amazonaws.com";
 
   fs.writeFileSync(configPath, ini.stringify(awsConfig), "utf8");
 }
+
+
+function isConnected(stsEndpoint) {
+  const http2 = require('http2');
+
+  return new Promise((resolve) => {
+    const client = http2.connect("https://" + stsEndpoint);
+    client.on('connect', () => {
+      resolve(true);
+      client.destroy();
+    });
+
+
+    client.setTimeout(5000, () => {
+      const err = new Error('STS Connection timeout: ' + stsEndpoint);
+      err.name = 'GRpcSessionConnectTimeoutError';
+      showError(err);
+      client.destroy();
+
+     });
+
+    client.on('error', () => {
+      resolve(false);
+      client.destroy();
+    });
+  });
+};
