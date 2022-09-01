@@ -88,7 +88,7 @@
     "jquery-countdown": "^2.2.0",
     "jsdom": "^13.2.0",
     "jwt-decode": "^2.2.0",
-    "@popperjs/core": "^2.11.5",
+    "@popperjs/core": "^2.11.6",
     "source-map-support": "^0.5.12",
     "uuid": "^3.3.2",
     "electron-debug": "^3.2.0"
